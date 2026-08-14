@@ -57,8 +57,6 @@ dsh web
 
 > 本插件无需构建步骤，`dsh plugin add github:...` 安装后直接可用（不会触发 pnpm 的 `prepare`/`allowBuilds` 提示）。
 
-> **如果你以前手动配过 `tool-vision-global` 子代理 / `vision-fallback` 技能**：本插件已自带同名能力，请删除 profile `cordis.patch.yml` 里的 `tool-vision-global` 条目（避免 `vision` 工具重名冲突）；本地 `~/.dsh/skills/vision-fallback/` 技能会被插件自带技能自动覆盖，可留可删。
-
 ---
 
 ## 配置
