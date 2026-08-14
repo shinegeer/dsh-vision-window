@@ -1,0 +1,10 @@
+node_modules/
+*.tgz
+pasted_images/
+*.log
+.DS_Store
+
+# 密钥/配置（防御性：即使误放到插件目录也不提交）
+.env
+.env.*
+config.json

@@ -1,0 +1,7 @@
+# vision-window bundle patch: inserts its host half into the web plugin roster.
+# 宿主半注册 loopback-only 的写文件 RPC + 视觉模型直连 RPC；
+# 浏览器半（dsh.client）在输入框旁渲染可拖动的图片存储框 + 配置面板。
+# 改动本文件后需重启 `dsh web` 生效。
+- insert:
+    - id: ui-vision-window
+      name: '@dsh-external/dsh-client-ui-vision-window'

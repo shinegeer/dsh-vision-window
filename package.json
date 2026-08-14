@@ -1,0 +1,58 @@
+{
+  "name": "@dsh-external/dsh-client-ui-vision-window",
+  "description": "DSH 网页端识图插件（dsh-vision-window）：输入框旁可拖动的图片存储框，粘贴/拖入截图后自动存到工作区并把图片路径插到消息最前；自带 vision 工具 + 识图技能，让 AI 在长工程里自动调识图模型并整理到「已识别图片」文件夹。",
+  "version": "1.0.0",
+  "license": "MIT",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "plugin",
+    "vision",
+    "image",
+    "image-recognition",
+    "ocr",
+    "识图"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shinegeer/dsh-vision-window.git"
+  },
+  "author": "shinegeer",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "check": "node --check lib/index.js && node --check lib/client.js",
+    "prepack": "npm run check"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "inject": [],
+      "platform": "web"
+    }
+  },
+  "dependencies": {
+    "@deepseek-ai/dsh-tools": "^0.1.0-rc.6"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "react": "^18.2.0"
+  }
+}
