@@ -9,7 +9,7 @@
 <p align="center">一个自包含的 DSH bundle 插件：Web 输入框旁可拖动的图片存储框、<code>vision</code> 工具、<code>vision-fallback</code> 识图技能，以及 7 个不需要供应商、不需要密钥、不需要 Python 的 <code>vw_*</code> 本地工具。</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/release-v1.2.0-5B4CF0?style=flat-square" alt="Release v1.2.0" />
+  <a href="https://github.com/shinegeer/dsh-vision-window/releases/tag/v1.2.0"><img src="https://img.shields.io/badge/release-v1.2.0-5B4CF0?style=flat-square" alt="Release v1.2.0" /></a>
   <img src="https://img.shields.io/badge/verified-23%20tests-2EA44F?style=flat-square" alt="Verified: 23 tests" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2EA44F?style=flat-square" alt="License: MIT" /></a>
   <a href="package.json"><img src="https://img.shields.io/badge/Node.js-%3E%3D20.9-339933?style=flat-square&amp;logo=nodedotjs&amp;logoColor=white" alt="Node.js >=20.9" /></a>
@@ -43,19 +43,6 @@ DeepSeek Harness 经常由纯文本模型驱动：往聊天框直接贴图会被
 5. 智能体按技能调用 `vision` 识图，然后把图片和 `NN_主题词.md` 说明整理进 `已识别图片/`。
 
 Headless 或长工程里可以跳过图片框：直接告诉智能体一个绝对图片路径，它会自己调 `vision`。
-
-## 横向对比
-
-| | dsh-vision-window | dsh-vision-router | @anionex/dsh-vision-toolkit |
-|---|---|---|---|
-| 图片问答 | 你自己配置的 OpenAI 兼容供应商，带预设和自动降级 | 内置免费链路，无需 key | 需要自己的视觉 API key |
-| 图片怎么进来 | 悬浮图片框 + 一键发送 | 贴图后整轮自动路由 | 工作区路径 + `/vision-tools` |
-| 本地像素工具 | 7 个 `vw_*`，纯 Node 零配置 | 10+ 个 `vision_*`，纯 Node | 10 个 `vision_*`，Python 3.11+ 托管运行时 |
-| 支持 profile | Web + Headless | Web | Web + Headless |
-| 安装 | 一条命令 | 一条命令 | 一条命令 |
-| 理念 | 显式“贴图-发送”，结果归档到「已识别图片」 | 贴图即用、透明路由 | 面向智能体的视觉工程 playbook |
-
-对比内容以上述项目 2026-08 的 README 为准。想要显式的图片窗口、双 profile 支持和零配置像素工具时选本插件。
 
 ## 快速开始
 

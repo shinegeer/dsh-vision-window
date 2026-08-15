@@ -58,7 +58,7 @@
 - [x] webtest:3999 客户端 bundle 含 `vw_*`/`localTools`/`artifactsDir`/零配置文案；停服并删除 webtest profile
 - [x] README 重写：README.md 默认英文 + README.zh.md 中文；少 emoji；模仿 router/toolkit 文风；加入用户截图 `assets/vision-window-demo.png`
 - [x] npm audit 调查：5 moderate = potrace→jimp→phin 远程加载链，插件只传本地 Buffer 不可达；尝试 jimp overrides（0.22.12 / 1.6.1）后回退基线，结论写入 findings + README 安全说明
-- [ ] commit + push v1.2
+- [x] commit 9e16f5a + push origin/main（v1.2.0）
 - [ ] 提醒用户重启正式 `dsh web`
 
 ## 验证过的命令

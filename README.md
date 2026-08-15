@@ -9,7 +9,7 @@
 <p align="center">A self-contained DSH bundle plugin: a draggable image box on the Web composer, a <code>vision</code> tool, a <code>vision-fallback</code> skill, and seven <code>vw_*</code> local tools that need no provider, no key, and no Python.</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/release-v1.2.0-5B4CF0?style=flat-square" alt="Release v1.2.0" />
+  <a href="https://github.com/shinegeer/dsh-vision-window/releases/tag/v1.2.0"><img src="https://img.shields.io/badge/release-v1.2.0-5B4CF0?style=flat-square" alt="Release v1.2.0" /></a>
   <img src="https://img.shields.io/badge/verified-23%20tests-2EA44F?style=flat-square" alt="Verified: 23 tests" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2EA44F?style=flat-square" alt="License: MIT" /></a>
   <a href="package.json"><img src="https://img.shields.io/badge/Node.js-%3E%3D20.9-339933?style=flat-square&amp;logo=nodedotjs&amp;logoColor=white" alt="Node.js >=20.9" /></a>
@@ -43,19 +43,6 @@ The screenshot above shows the floating image box in DSH Web. The flow is:
 5. The agent follows the skill, calls `vision` with that path, and archives the image plus a `NN_主题词.md` note into `已识别图片/`.
 
 In headless or long-running sessions you can skip the box entirely and tell the agent to look at any absolute image path — it will call `vision` on its own.
-
-## How it compares
-
-| | dsh-vision-window | dsh-vision-router | @anionex/dsh-vision-toolkit |
-|---|---|---|---|
-| Image Q&A | Your configured OpenAI-compatible provider, with presets and automatic failover | Built-in free chain, no key | Your own vision API key |
-| Getting an image in | Floating paste box + one send button | Paste it and the turn auto-routes | Workspace path + `/vision-tools` |
-| Local pixel tools | 7 `vw_*`, zero-config Node pipeline | 10+ `vision_*`, Node pipeline | 10 `vision_*`, Python 3.11+ managed runtime |
-| Profiles | Web + Headless | Web | Web + Headless |
-| Install | One command | One command | One command |
-| Philosophy | Explicit paste-and-send, results archived to `已识别图片` | Paste-and-go, transparent routing | Agent-driven visual engineering playbooks |
-
-Comparison reflects the referenced READMEs as of 2026-08. Pick this plugin when you want a visible, explicit image window plus zero-config pixel tools in both Web and Headless profiles.
 
 ## Quick start
 

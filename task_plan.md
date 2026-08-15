@@ -77,7 +77,7 @@
 - [x] README 重写：README.md 默认英文 + README.zh.md 中文；少 emoji；模仿 dsh-vision-router / dsh-vision-toolkit 文风；加入用户截图 `assets/vision-window-demo.png` 作演示
 - [x] `npm audit --omit=dev`：5 moderate 全部来自 potrace→jimp→phin 的远程加载链（插件只传本地 Buffer，不可达）；README 安全说明已记录；sharp 0.35.3 零漏洞
 - [x] 五轴代码审查：3 必修项已修（前景洪泛 `queue.shift()` 改索引指针；`vw_trace` 1MP 上限在 `downscale=false` 时也强制；`vw_html_screenshot` 拦截非 `file:` 请求），另修多项 Optional/Nit；测试增至 23 项全绿
-- [ ] git commit + push origin/main
+- [x] git commit 9e16f5a + push origin/main
 
 ## 验收总闸
 
@@ -89,7 +89,7 @@
 - [x] v1.2 headless 零配置真机通过（vw_colors 在无凭据 preset 下正确返回；pixel_diff/crop/ocr/html_screenshot 均实测）
 - [x] v1.2 webtest 客户端 bundle 含 vw_*/localTools/artifactsDir 文案（临时 profile 已清理）
 - [x] README 默认英文 + README.zh.md 中文版，含演示截图
-- [ ] v1.2 commit + push origin/main
+- [x] v1.2 commit 9e16f5a + push origin/main
 - [ ] 重启正式 `dsh web` 后浮窗贴图全流程回归（需用户配合）
 
 ## 风险与回滚

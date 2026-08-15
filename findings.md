@@ -107,6 +107,6 @@
 
 ### 9.2 README 重写文风（参考 dsh-vision-router / dsh-vision-toolkit）
 
-- 结构：居中 hero 标题 + 一句话定位 + badges + 语言切换 → Why this exists → 演示图 + 流程 → How it compares（三方对比表）→ Quick start → Highlights → Tools 表 → Provider presets → Credentials → Configuration 表 → Headless YAML → Requirements → Install and lifecycle → Security notes → Architecture → Development → Known limitations → License。
+- 结构：居中 hero 标题 + 一句话定位 + badges + 语言切换 → Why this exists → 演示图 + 流程 → Quick start → Highlights → Tools 表 → Provider presets → Credentials → Configuration 表 → Headless YAML → Requirements → Install and lifecycle → Security notes → Architecture → Development → Known limitations → License。（v1.2 定稿按用户要求删掉了三方对比章节。）
 - 文风：少 emoji（甚至不用），技术性短句，表格承载事实，代码块给可复制命令，安全说明单独成段。
 - 演示图：用户 2026-08-15 贴的 DSH Web 截图已复制到 `assets/vision-window-demo.png`（1332×320 PNG，约 81 KB），README.md 与 README.zh.md 均引用。
