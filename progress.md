@@ -59,6 +59,8 @@
 - [x] README 重写：README.md 默认英文 + README.zh.md 中文；少 emoji；模仿 router/toolkit 文风；加入用户截图 `assets/vision-window-demo.png`
 - [x] npm audit 调查：5 moderate = potrace→jimp→phin 远程加载链，插件只传本地 Buffer 不可达；尝试 jimp overrides（0.22.12 / 1.6.1）后回退基线，结论写入 findings + README 安全说明
 - [x] commit 9e16f5a + push origin/main（v1.2.0）
+- [x] GitHub Releases：v1.1.0（686cec0）+ v1.2.0（9e16f5a）已发布；README release 徽章链接 release 页
+- [x] 按用户要求删除 README 中英两版的横向对比章节；commit 765562e + push
 - [ ] 提醒用户重启正式 `dsh web`
 
 ## 验证过的命令
