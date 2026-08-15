@@ -1,128 +1,191 @@
-# dsh-vision-window（DSH 识图插件）
+<p align="center">
+  <img src="assets/vision-window-demo.png" width="100%" alt="dsh-vision-window: the floating image storage box next to the DSH Web composer" />
+</p>
 
-在 DeepSeek Harness（DSH）网页端输入框旁，加一个**可拖动的图片存储框**：粘贴 / 拖入 / 选择截图，点「识别并发送」把截图存到工作区、并把图片路径自动插到你输入文字的前面一起发送。之后 AI 会**自动调用 `vision` 工具识图**，并把结果整理到工作区的 **`已识别图片`** 文件夹（配 markdown 描述）。
+<h1 align="center">dsh-vision-window</h1>
 
-> 适用于主模型是纯文本模型、本身读不了图片的场景。识图模型可选内置预设（OpenCode Go / OpenCode Zen / 小米 MiMo）或任意 OpenAI 兼容视觉模型；**API Key 走 DSH 凭据体系**（插件配置里只有凭据引用名，绝不存 key）。Web 与 Headless 双端可用。
+<p align="center"><strong>Paste an image, click one button, and a text-only DeepSeek Harness agent sees it — plus seven zero-config local pixel and OCR tools.</strong></p>
 
----
+<p align="center">A self-contained DSH bundle plugin: a draggable image box on the Web composer, a <code>vision</code> tool, a <code>vision-fallback</code> skill, and seven <code>vw_*</code> local tools that need no provider, no key, and no Python.</p>
 
-## 特性
+<p align="center">
+  <img src="https://img.shields.io/badge/release-v1.2.0-5B4CF0?style=flat-square" alt="Release v1.2.0" />
+  <img src="https://img.shields.io/badge/verified-23%20tests-2EA44F?style=flat-square" alt="Verified: 23 tests" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2EA44F?style=flat-square" alt="License: MIT" /></a>
+  <a href="package.json"><img src="https://img.shields.io/badge/Node.js-%3E%3D20.9-339933?style=flat-square&amp;logo=nodedotjs&amp;logoColor=white" alt="Node.js >=20.9" /></a>
+  <img src="https://img.shields.io/badge/runtime-no%20Python-8A2BE2?style=flat-square" alt="No Python" />
+  <img src="https://img.shields.io/badge/DSH-Web%20%2B%20Headless-5B4CF0?style=flat-square" alt="DSH Web + Headless" />
+</p>
 
-- 📎 输入框旁一个「识图」按钮，点开一个**像输入框一样**的图片存储框（不是文件选择框）。
-- 🖼️ 支持**粘贴（Ctrl+V）**、**拖入**、**点击「选择图片」**三种方式加入截图；自动保存到当前工作区的 `pasted_images\` 目录。
-- 📤 「识别并发送」= **保存图片 + 把图片路径插到你输入文字最前面 + 一起发送**（输入框不被污染）。
-- 🤖 插件自带 **`vision` 工具**：AI 在长工程里也能随时自己调 `vision(路径)` 识图，不只是图片框。
-- 📁 插件自带**识图技能**：AI 识图成功后自动建 **`已识别图片`** 文件夹，整理图片 + 写对应 markdown 结果。
-- 🧭 **模型预设下拉**：OpenCode Go（MiMo-V2.5）、OpenCode Zen（MiMo-V2.5-Free 免费）、小米 MiMo（MiMo-V2.5）、自定义。
-- 🔁 **供应商自动降级**：主供应商失败时按顺序尝试备用供应商，429 尊重 Retry-After 退避，失败原因分类并给出建议。
-- 💾 **答案缓存**：同一张图 + 同一问题不重复调用视觉模型（进程内 LRU+TTL）。
-- 🔍 **调用前 downscale**：超过像素预算的大图自动缩小（sharp），省流量、省延迟。
-- 🧠 **推理块剥离**：自动去掉 `<think>` / `<thinking>` / `<reasoning>` / `<|think|>` 等推理块，只留识别结果。
-- 🖥️ **Headless 支持**：`dsh --profile headless` 下 `vision` 工具照常可用。
-- 🔐 **DSH 凭据体系**：配置只存 `OPENCODE_API_KEY` / `XIAOMI_API_KEY` 之类的引用名，key 放 `~/.dsh/.credentials.yaml` 或环境变量，每次调用现解析。
-- 🌐 中英双语界面 + 双语识图提示词。
+<p align="center">English · <a href="README.zh.md">中文</a></p>
 
----
+## Why this exists
 
-## 安装（一键）
+DeepSeek Harness is often driven by a text-only model: pasting an image directly into the composer is blocked, and the model has no image channel of its own. The old workaround was a hand-assembled stack of a vision sub-agent, a local skill and per-profile wiring — it worked on one machine and was hard to give to anyone else.
 
-要求：已安装 [DSH](https://github.com/deepseek-ai/deepseek-harness)（`dsh` 命令可用）、[pnpm](https://pnpm.io/)、Node ≥ 20.9（sharp 0.35 要求）。
+This plugin bundles the whole path into one installable package:
 
-### Web
+- **The image box is the entry point.** Paste, drag or choose an image; the plugin saves it into the workspace and, when you click **Recognize & send**, puts the file path at the front of your message. Your draft stays clean.
+- **`vision` is a tool, not a detour.** The agent calls it inside long-running work whenever it needs to look at a file, and answers come straight from your configured OpenAI-compatible vision provider.
+- **`vw_*` tools cover the pixel work.** Crop, pixel diff, palette, SVG trace, OCR, HTML screenshot and foreground extraction run locally with zero configuration — no vision provider or API key required.
+- **The skill closes the loop.** A registered `vision-fallback` skill teaches the agent when to call `vision`, when to prefer `vw_*`, and how to archive results into a `已识别图片` folder with markdown notes.
 
-```bash
+The design stays additive: the plugin never replaces composer components and never intercepts keyboard events. Its only network egress is the vision provider you configure — the `vw_*` tools run offline, and `vw_html_screenshot` additionally blocks network requests while rendering the local file.
+
+## See it in action
+
+The screenshot above shows the floating image box in DSH Web. The flow is:
+
+1. Click **识图** (Recognize) next to the composer.
+2. Paste a screenshot with `Ctrl+V`, drag a file in, or click **选择图片** (Choose image).
+3. Type normally in the composer — it stays untouched.
+4. Click **识别并发送** (Recognize & send). The plugin saves the image under `<workspace>/pasted_images/`, prepends `识别图片 <path>` to your draft, sends the message, then clears and closes the box.
+5. The agent follows the skill, calls `vision` with that path, and archives the image plus a `NN_主题词.md` note into `已识别图片/`.
+
+In headless or long-running sessions you can skip the box entirely and tell the agent to look at any absolute image path — it will call `vision` on its own.
+
+## How it compares
+
+| | dsh-vision-window | dsh-vision-router | @anionex/dsh-vision-toolkit |
+|---|---|---|---|
+| Image Q&A | Your configured OpenAI-compatible provider, with presets and automatic failover | Built-in free chain, no key | Your own vision API key |
+| Getting an image in | Floating paste box + one send button | Paste it and the turn auto-routes | Workspace path + `/vision-tools` |
+| Local pixel tools | 7 `vw_*`, zero-config Node pipeline | 10+ `vision_*`, Node pipeline | 10 `vision_*`, Python 3.11+ managed runtime |
+| Profiles | Web + Headless | Web | Web + Headless |
+| Install | One command | One command | One command |
+| Philosophy | Explicit paste-and-send, results archived to `已识别图片` | Paste-and-go, transparent routing | Agent-driven visual engineering playbooks |
+
+Comparison reflects the referenced READMEs as of 2026-08. Pick this plugin when you want a visible, explicit image window plus zero-config pixel tools in both Web and Headless profiles.
+
+## Quick start
+
+Prerequisites: a DeepSeek Harness installation with a Web or Headless profile and `pnpm` available to `dsh plugin`.
+
+```sh
+# Web
 dsh plugin --profile web add github:shinegeer/dsh-vision-window
-```
 
-### Headless
-
-```bash
+# Headless
 dsh plugin --profile headless add github:shinegeer/dsh-vision-window
 ```
 
-安装完成后**重启** `dsh web` 生效（插件在服务启动时装载，仅刷新网页不够）：
+Restart a running Web profile, then confirm the bundle row:
 
-```bash
-dsh web
+```sh
+dsh --profile web --dump-config | grep ui-vision-window
 ```
 
-> 本插件无需构建步骤，`dsh plugin add github:...` 安装后直接可用。sharp 是普通依赖，pnpm 会自动安装预编译二进制。
+No build step is required. `sharp` installs its prebuilt binary through pnpm; `potrace` and `puppeteer-core` are ordinary dependencies.
 
----
+Two levels of configuration:
 
-## 快速配置
+- **Zero config** — the seven `vw_*` local tools work immediately; they never read provider settings or credentials.
+- **`vision` (understand/describe an image)** — open the gear in the image box (Web) or edit `~/.dsh/settings.yaml` (Headless), pick a preset, save a DSH credential, and the agent can call `vision` anywhere.
 
-1. 点输入框旁的 **「识图」** 按钮，打开图片存储框。
-2. 点浮窗右上角的 **⚙** 齿轮，展开配置面板。
-3. 在「模型预设」里选一个，勾选需要的「备用供应商」，点 **「保存」**。
+## Highlights
 
-### 模型预设
+- **A real paste box, not a file dialog.** The floating box accepts paste, drag and choose; thumbnails are removable, the window is draggable and stays inside the viewport.
+- **One explicit action sends the image.** The composer draft and the image paths are combined only when you click the send button; no surprise sends, no input pollution.
+- **Presets and a failover chain.** OpenCode Go, OpenCode Zen (free) and Xiaomi MiMo presets, plus a custom OpenAI-compatible provider; failures are classified and walked in order, `429` honors `Retry-After` once.
+- **Answers are cached by content.** The cache key is the image hash plus question plus provider chain, so switching chains or changing settings invalidates it.
+- **Large images are downscaled before upload.** `sharp` reduces images over the pixel budget; failure falls back to the original bytes.
+- **Reasoning blocks are stripped.** Paired, unclosed, HTML-escaped and `<|think|>` forms are removed before the answer reaches the model.
+- **Local tools are measurable.** Pixel diff returns a ratio, a red heatmap and a JSON report — UI restoration becomes a number instead of an eyeball comparison.
+- **Headless keeps the same tools.** The Web-only RPC lives behind a `connection` injection; headless sessions get `vision`, the skill and all seven `vw_*` tools unchanged.
+- **Keys stay in DSH credentials.** The plugin stores only reference names such as `OPENCODE_API_KEY`; values are resolved per call and never logged or returned to the browser.
 
-| 预设 | 接口地址 | 模型 | 凭据引用 |
+## Tools
+
+### `vision`
+
+One tool with a required absolute `image_path` and an optional `question`. It resolves the settings, reads and validates the image (magic bytes, 20 MiB limit), downscales when needed, walks the provider chain with classified errors, strips reasoning blocks and returns the description. A `[vision-window 状态]` line is appended when a fallback provider succeeded.
+
+### `vw_*` local tools
+
+Registered permanently and enabled by `localTools` (default `true`). All inputs must be absolute paths; artifacts land in `.dsh-vision-window/artifacts` relative to the session workspace unless `artifactsDir` is set.
+
+| Tool | What it does | Execution | Artifact |
 |---|---|---|---|
-| OpenCode Go | `https://opencode.ai/zen/go/v1` | `mimo-v2.5` | `OPENCODE_API_KEY` |
-| OpenCode Zen（免费） | `https://opencode.ai/zen/v1` | `mimo-v2.5-free` | `OPENCODE_API_KEY` |
-| 小米 MiMo | `https://api.xiaomimimo.com/v1` | `mimo-v2.5` | `XIAOMI_API_KEY` |
-| 自定义 | 自己填 | 自己填 | 自己填 |
+| `vw_crop` | Crop a pixel box `"x1,y1,x2,y2"` | local `sharp` | PNG |
+| `vw_pixel_diff` | Per-pixel comparison: diff ratio, diff count, worst 8×8-grid regions | local `sharp` | red heatmap PNG + JSON report |
+| `vw_colors` | Dominant colors as hex plus share | local `sharp` | — |
+| `vw_trace` | Bitmap to SVG vectorization (posterized layers; icons/logos) | local `potrace` | SVG |
+| `vw_ocr` | Text transcription, default `chi_sim+eng` | system `tesseract`; missing binary returns install guidance | — |
+| `vw_html_screenshot` | Screenshot a local HTML file, default viewport 1200×720 | `puppeteer-core` + system Chrome/Edge | PNG |
+| `vw_extract_foreground` | Remove border-connected background (uniform/near-uniform backgrounds) | local flood fill on `sharp` pixels | transparent PNG |
 
-> ⚠️ OpenCode Go 的 `/zen/go/v1` 是未在 OpenCode Zen 官方文档列出的端点（models.dev 收录），请先用「测试连接」确认你的 key 可用。`mimo-v2.5-pro` / `mimo-v2-flash` **只支持文本**，不能做识图预设。
+Notes:
 
-### 配置 DSH 凭据
+- `vw_pixel_diff` resizes the rebuilt image to the original's dimensions when they differ and says so in the result.
+- Local tools respect the `downscale` pixel budget; `vw_trace` has a hard 1 MP input cap that is enforced even when `downscale` is off.
+- `vw_ocr` and `vw_html_screenshot` are the only tools with external system requirements; everything else works with the plugin's own Node dependencies.
 
-在配置面板「新密钥值」里粘贴 key，点 **「保存凭据」**；或者直接编辑 `~/.dsh/.credentials.yaml`（`$DSH_HOME/.credentials.yaml`）：
+Common workflows:
+
+```text
+vw_crop              image="ref.png" region="1067,841,1108,881"
+vw_pixel_diff        original="ref.png" rebuilt="screenshot.png"
+vw_colors            image="ref.png" top=8
+vw_trace             image="icon.png" steps=4
+vw_ocr               image="screenshot.png"
+vw_html_screenshot   source="page.html" width=1200 height=720
+vw_extract_foreground image="logo.png"
+```
+
+## Provider presets
+
+| Preset | Base URL | Model | Credential reference |
+|---|---|---|---|
+| `opencode-go` | `https://opencode.ai/zen/go/v1` | `mimo-v2.5` | `OPENCODE_API_KEY` |
+| `opencode-zen` | `https://opencode.ai/zen/v1` | `mimo-v2.5-free` | `OPENCODE_API_KEY` |
+| `xiaomi-mimo` | `https://api.xiaomimimo.com/v1` | `mimo-v2.5` | `XIAOMI_API_KEY` |
+| `custom` | yours | yours | yours |
+
+The OpenCode Go `/zen/go/v1` endpoint is recorded by models.dev but not listed in the official OpenCode Zen documentation — verify it with the connection test first. `mimo-v2.5-pro` and `mimo-v2-flash` are text-only and must not be used as vision presets.
+
+## Credentials
+
+Put keys in `~/.dsh/.credentials.yaml` (file mode `0600`) or export them as environment variables:
 
 ```yaml
-OPENCODE_API_KEY: sk-…
-XIAOMI_API_KEY: sk-…
+OPENCODE_API_KEY: sk-...
+XIAOMI_API_KEY: sk-...
 ```
 
-或用环境变量（`OPENCODE_API_KEY` / `XIAOMI_API_KEY`）。凭据**每次调用时现解析**，改完不用重启。配置面板只回显「已配置 / 来源」，绝不回传 key 明文。
+The Web panel saves and clears credentials through the DSH credentials service and only reports `configured / source / writable`. Keys are resolved at call time, so a changed key applies on the next request without a restart.
 
-### 降级链
+## Configuration
 
-- 「模型预设」= 主供应商；勾选「备用供应商」= 按显示顺序自动降级。
-- 部分失败但降级成功时，识别结果末尾会带一行 `[vision-window 状态] …`；AI 写「已识别图片」md 时会自动跳过这一行。
-- 全部失败时，`vision` 工具返回分类错误（auth / quota / rate / endpoint / server / timeout / network / credential-missing）和对应建议。
+All fields live under the `vision-window` section of `~/.dsh/settings.yaml`; the Web panel writes the same section. Defaults from the schema:
 
-### 高级选项（⚙ 面板里可改）
-
-| 选项 | 默认 | 说明 |
+| Field | Default | Meaning |
 |---|---|---|
-| downscale | 开 | 超过像素预算的图先缩小再上传 |
-| downscaleMaxPixels | 4,000,000 | 像素预算（约 2000×2000） |
-| 答案缓存 | 开 | 同图同问 1 小时内命中缓存；进程内，重启清空 |
-| 缓存 TTL / 条数 | 3600s / 200 | 可调 |
-| 剥离推理块 | 开 | 去掉 `<think>` 等推理输出 |
-| 请求超时 | 60s | 单次视觉调用超时 |
+| `preset` | `opencode-go` | primary provider: `opencode-go` / `opencode-zen` / `xiaomi-mimo` / `custom` |
+| `fallbacks` | `[opencode-zen, xiaomi-mimo]` | backup providers, tried in order |
+| `custom` | `{ baseUrl: "", model: "", apiType: chat, credential: "", maxTokens: 0 }` | custom OpenAI-compatible provider |
+| `language` | `zh` | UI and result language |
+| `downscale` / `downscaleMaxPixels` | `true` / `4000000` | pre-call downscale and pixel budget |
+| `cache` / `cacheTtlSeconds` / `cacheMaxEntries` | `true` / `3600` / `200` | in-process answer cache |
+| `stripThink` | `true` | remove `<think>` / reasoning blocks |
+| `timeoutMs` | `60000` | per vision-call deadline |
+| `localTools` | `true` | master switch for the seven `vw_*` tools |
+| `artifactsDir` | `.dsh-vision-window/artifacts` | artifact directory; relative paths resolve against the session workspace, absolute paths are used as-is |
 
----
+## Headless usage
 
-## 使用
-
-1. 点 **「识图」** → 在图片存储框里 **粘贴截图**（Ctrl+V），或把图片**拖入**框内，或点 **「选择图片」**。
-2. 图片保存成功后显示缩略图（可点 × 移除）。
-3. 在**聊天输入框**里正常输入你想说的话（可选）。
-4. **最后，点击图片存储框里的「识别并发送」**（这一步最关键）→ 插件把 `识别图片 <路径>`（多图换行列表）插到你输入文字最前面，一起发给主模型。
-5. 主模型（纯文本）读到路径 → 按技能调用 **`vision` 工具**识图 → 拿到描述 → 按技能把结果整理进 **`已识别图片\`** 文件夹（图片 + `NN_主题词.md` 描述文件）。
-
-> ⚠️ **必须点击图片存储框里的「识别并发送」才会开始识图**：只粘贴 / 拖入图片、或只在输入框打字，都不会触发识图——图片路径要随这一步一起发出，AI 才会收到并调用 `vision`。
-
-> 长工程里，你也可以直接给 AI 一个图片路径、贴一张附件、或说「识别工作区里的图片」——AI 都会自己调 `vision` 识图，并整理到 `已识别图片` 文件夹。
-
-### Headless 用法
-
-Headless 没有浮窗，配置写在 `~/.dsh/settings.yaml` 的 `vision-window` 段：
+No floating box exists in headless. Configure `vision-window` in `~/.dsh/settings.yaml` and run one-shot tasks:
 
 ```yaml
 vision-window:
-  preset: opencode-zen          # opencode-go | opencode-zen | xiaomi-mimo | custom
+  preset: opencode-go
   fallbacks:
+    - opencode-zen
     - xiaomi-mimo
-  custom:                       # 仅 preset/fallbacks 用到 custom 时生效
+  custom:
     baseUrl: ""
     model: ""
     apiType: chat
-    credential: MY_VISION_API_KEY
+    credential: ""
     maxTokens: 0
   language: zh
   downscale: true
@@ -132,105 +195,120 @@ vision-window:
   cacheMaxEntries: 200
   stripThink: true
   timeoutMs: 60000
+  localTools: true
+  artifactsDir: .dsh-vision-window/artifacts
 ```
 
-然后直接跑一次性任务：
-
-```bash
-dsh --profile headless "调用 vision 工具识别图片 C:\path\a.png，告诉我内容"
+```sh
+dsh --profile headless "call vision on C:\path\a.png and tell me what it shows"
+dsh --profile headless "call vw_colors on C:\path\a.png with top=2"
+dsh --profile headless "call vw_pixel_diff on C:\path\ref.png against C:\path\impl.png"
 ```
 
----
+## Requirements
 
-## 支持的视觉模型（自定义预设）
+- DeepSeek Harness with a Web or Headless profile and `pnpm` available to `dsh plugin`.
+- Node ≥ 20.9 (sharp 0.35 requirement).
+- A vision provider and a DSH credential only for `vision`; the `vw_*` tools need neither.
+- Chrome, Chromium or Edge only for `vw_html_screenshot`; set `CHROME_PATH` to override the default search paths.
+- Tesseract only for `vw_ocr`; without it the tool returns a clear installation pointer and every other tool keeps working.
 
-任何 **OpenAI 兼容、支持图片输入（image input）** 的模型都能用，例如：
+## Install and lifecycle
 
-- OpenAI：`gpt-4o-mini`、`gpt-4o`、`gpt-4.1` …
-- 阿里云百炼（DashScope）：`qwen-vl-max`、`qwen-vl-plus` …
-- 各类中转网关 / 自建 vLLM / OneAPI / New API 等 OpenAI 兼容服务
+### Install
 
-接口类型：`chat`（`/chat/completions`，默认）| `responses`（`/responses`）| `completions`（仅测试，不支持图片）。
+```sh
+dsh plugin --profile web add github:shinegeer/dsh-vision-window
+dsh plugin --profile headless add github:shinegeer/dsh-vision-window
+```
 
----
+Restart a long-lived Web profile after installation. The host discovers the browser bundle through `dsh.client` at startup; a plain page refresh is not enough.
 
-## 配置存到哪里
+### Disable / re-enable
 
-- **插件配置**：`~/.dsh/settings.yaml` 的 `vision-window` 段（Web 面板保存的也是这里）。
-- **API Key**：`~/.dsh/.credentials.yaml`（0600）或环境变量——插件配置里只有凭据名。
-- **旧版迁移**：v1.0 的 `~/.dsh/paste-image/config.json` 会在首次启动时自动迁移（key 转入 DSH 凭据 `VISION_WINDOW_API_KEY`，配置转入 settings）。旧文件保留用于回滚，确认无碍后可以手动删除。
+Disable the row in the profile patch (`~/.dsh/profiles/<profile>/cordis.patch.yml`):
 
----
+```yaml
+- id: ui-vision-window
+  disabled: true
+```
 
-## 常见问题（FAQ）
+Set it back to `false` to re-enable. Unloading removes the tools, skill and settings card; saved images and artifacts remain.
 
-| 现象 | 原因 / 解决 |
-|---|---|
-| 点「识图」没反应 | 重启 `dsh web`（插件代码改动后需重启，仅刷新网页不够） |
-| 测试连接 401 / 403 | 凭据里的 key 错误或无权限，去 `.credentials.yaml` 核对 |
-| 测试连接 404 / 405 | 自定义地址错（是否漏了 `/v1`）或接口类型选错 |
-| 提示「凭据 XXX 未配置」 | 把 key 写进 `.credentials.yaml` 或环境变量，再点保存 |
-| AI 没自动调 `vision` 识图 | 确认已保存配置；确认消息里有图片路径/附件；或重启 `dsh web` 让技能生效 |
-| 识别提示「模型不支持图片」 | 换一个声明支持 image 输入的模型 |
-| 识别超时 / 网络失败 | 在 ⚙ 里调大超时、检查网络/代理；或换备用供应商 |
-| 大图识别慢 | 默认已自动 downscale 到 400 万像素内，可在 ⚙ 调预算 |
-| 缓存了旧答案 | 缓存按「图片内容哈希 + 问题 + 供应商链」区分；换供应商链即失效，重启进程清空 |
-| 识别结果里少了思考过程 | 这是特性：`<think>` / reasoning 块默认剥离，可在 ⚙ 关闭 |
-| 旧 config.json 还在 | 迁移后保留作回滚备份；插件不再读它写入，可手动删 |
+### Upgrade
 
----
+```sh
+dsh plugin --profile web update github:shinegeer/dsh-vision-window
+```
 
-## 目录结构与原理
+Settings live in `~/.dsh/settings.yaml` and survive upgrades.
+
+### Uninstall
+
+```sh
+dsh plugin --profile web remove @dsh-external/dsh-client-ui-vision-window
+dsh plugin --profile headless remove @dsh-external/dsh-client-ui-vision-window
+```
+
+Uninstalling never deletes `pasted_images/`, `已识别图片/`, credentials or the `vision-window` settings section.
+
+## Security notes
+
+- Credentials are DSH credential references; values are resolved per call, never cached in the plugin, never logged and never returned over the config RPC.
+- Image text is **untrusted evidence**. The bundled skill tells the agent not to execute instructions found inside images; recognized text is data, not directives.
+- The plugin accepts only png / jpg / webp / gif inputs (magic-byte check) up to 20 MiB, and local artifacts are written only under `artifactsDir`.
+- `vw_html_screenshot` enables request interception inside the browser and aborts every non-`file:` request, so the rendered page cannot fetch or beacon remote resources.
+- `npm audit --omit=dev` reports five moderate findings from a single `phin` advisory (`phin <3.7.1`, transitive through `potrace` → `jimp`). The affected code path is Jimp's remote-URL loader; this plugin passes only locally validated buffers to `potrace`, so that path is never exercised. `sharp` 0.35.3 has zero advisories.
+
+## Architecture
 
 ```
 dsh-vision-window/
-├── package.json          # 包元信息、bundle 声明、sharp/schemastery 依赖
-├── cordis.patch.yml      # 把宿主半插入 profile 的插件清单（web/headless 通用）
+├── package.json            # bundle declaration, dependencies (sharp/potrace/puppeteer-core)
+├── cordis.patch.yml        # injects the host half into the profile plugin roster
 ├── lib/
-│   ├── index.js          # 宿主半：settings/凭据/vision 工具/识图技能 + loopback RPC
-│   └── client.js         # 浏览器半：图片存储框 UI + 预设配置面板 + 发送
+│   ├── index.js            # host: settings, credentials, vision tool, skill, RPC
+│   ├── client.js           # browser: image box UI + settings panel
+│   ├── image-utils.js      # shared sharp loading / magic-byte check / downscale
+│   └── local-tools.js      # the seven vw_* local tools
 ├── tests/
-│   ├── host.test.mjs     # 推理剥离/降级链/缓存/downscale/schema 单测
-│   └── apply.test.mjs    # apply() 在 web/headless 两种服务形态下的装配测试
-├── README.md
+│   ├── host.test.mjs
+│   ├── apply.test.mjs
+│   └── local-tools.test.mjs
+├── assets/
+│   └── vision-window-demo.png
+├── README.md / README.zh.md
 └── LICENSE
 ```
 
-- **宿主半（`lib/index.js`）**：
-  - `ctx.settings.register('vision-window', …)` 存配置（预设、降级链、缓存、downscale 等）；
-  - `ctx.tools.register` 注册 **`vision` 工具**；识图走供应商链：失败自动降级，429 退避，错误分类，答案缓存，sharp downscale，推理剥离；
-  - `ctx.skills.register` 注册 **识图技能**；
-  - Web 专属：`ctx.inject(['connection'])` 注册 loopback-only 的 `/paste-image` RPC（`save` / `get-config` / `set-config` / `test-vision` / `set-credential` / `unset-credential` / `credential-info`）。Headless 没有 `connection`，该 fiber 不会激活，工具/技能/设置照常工作。
-- **浏览器半（`lib/client.js`）**：`conversation.input.right` 槽位注入「识图」按钮；⚙ 面板 = 预设下拉 + 备用供应商 + DSH 凭据管理 + 高级选项。
-- **数据流**：粘贴 → `save` 写盘 → 点「识别并发送」→ 发 `识别图片 <路径>` → 主模型按技能调 `vision` 工具 → 按供应商链识图 → 整理到 `已识别图片` 文件夹。
+Data flow:
 
----
+1. Browser: paste → `save` RPC writes `<workspace>/pasted_images/...` → thumbnail appears.
+2. User clicks send → the client reads the draft, prepends `识别图片 <path>` (one line per image) and sends it; draft is cleared and the box closes.
+3. Host: the agent follows `vision-fallback`, calls `vision`, and the provider chain returns a description; the agent archives the image and a markdown note into `已识别图片/`.
+4. Pixel work: the agent calls `vw_*` directly; tools validate the absolute path, run locally and report artifact paths under `.dsh-vision-window/artifacts`.
 
-## 开发
+The Web-only `/paste-image` RPC is registered inside `ctx.inject(['connection'])`, so headless profiles skip it while keeping tools, skill, settings and credentials.
 
-```bash
-npm run check      # 语法检查（node --check 两个 lib 文件）
-npm test           # node --test（单测 + 双形态装配测试）
-npm pack           # 打包（prepack 会自动跑 check）
+## Development
+
+```sh
+npm run check   # node --check on all four lib files
+npm test        # node --test, 23 tests
+npm pack        # prepack runs check
 ```
 
-改动 `lib/*.js` / `cordis.patch.yml` 后需重启 `dsh web`。
+Edit `lib/index.js` for the host half (prompt in `visionPrompt()`, skill in `SKILL_CONTENT`, presets in `PRESET_DEFS`), `lib/client.js` for the box and panel (positioning in `measureComposer()`, width in `.ui-paste-image-float`), and `lib/local-tools.js` for the `vw_*` family. Host and client changes require a Web profile restart.
 
-**定位/尺寸微调**：见 `lib/client.js` 里 `measureComposer()`（横向 `- 260 - 12`、纵向 `vh - rect.bottom`）与 `.ui-paste-image-float` 的 `width:260px`。
+## Known limitations
 
-**识图提示词 / 技能内容**：见 `lib/index.js` 里的 `visionPrompt()`、`SKILL_CONTENT`；预设表在 `PRESET_DEFS`。
-
----
-
-## 已知限制
-
-- 答案缓存是**进程内存**（LRU+TTL），重启即清，不做跨进程共享。
-- downscale 对 GIF 只取首帧（sharp 行为）。
-- OpenCode Go 的 `/zen/go/v1` 端点未在 OpenCode 官方文档记载，以实际测试为准。
-- 密钥安全依赖 DSH 凭据库的 0600 文件与操作系统的用户隔离；插件侧保证配置里只存引用名、不回传不打印 key。
-
----
+- The answer cache is in-process (LRU + TTL); it clears on restart and is not shared across processes.
+- Downscale keeps only the first frame of animated GIFs (sharp behavior).
+- The OpenCode Go endpoint is undocumented upstream; treat the connection test as authoritative.
+- `vw_ocr` needs a system tesseract and `vw_html_screenshot` needs a system browser; both return actionable guidance when absent.
+- Artifact filenames carry timestamps and random suffixes, so files accumulate instead of overwriting; delete `artifactsDir` to clean up.
+- `potrace` carries the transitive `phin` advisory described under Security notes; it is unreachable from the plugin's local-buffer call path.
 
 ## License
 
-[MIT](./LICENSE)
+[MIT](LICENSE)

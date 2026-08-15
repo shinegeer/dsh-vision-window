@@ -102,8 +102,12 @@ test('apply registers settings + vision tool + skill without connection (headles
   try {
     assert.equal(booted.settings.scopes.length, 1);
     assert.equal(booted.settings.scopes[0].ns, 'vision-window');
-    assert.equal(booted.tools.registered.length, 1);
+    assert.equal(booted.tools.registered.length, 8);
     assert.equal(booted.tools.registered[0].name, 'vision');
+    assert.deepEqual(
+      booted.tools.registered.map((t) => t.name).filter((n) => n.startsWith('vw_')).sort(),
+      ['vw_colors', 'vw_crop', 'vw_extract_foreground', 'vw_html_screenshot', 'vw_ocr', 'vw_pixel_diff', 'vw_trace'],
+    );
     assert.equal(booted.skills.registered.length, 1);
     assert.equal(booted.skills.registered[0].name, 'vision-fallback');
     assert.equal(booted.rpcHandler, undefined);

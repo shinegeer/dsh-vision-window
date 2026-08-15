@@ -1,7 +1,7 @@
 {
   "name": "@dsh-external/dsh-client-ui-vision-window",
-  "description": "DSH 网页端识图插件（dsh-vision-window）：输入框旁可拖动的图片存储框，粘贴/拖入截图后自动存到工作区并把图片路径插到消息最前；自带 vision 工具 + 识图技能，模型预设（OpenCode Go/Zen、小米 MiMo）+ DSH 凭据 + 供应商自动降级 + 答案缓存，Web 与 Headless 双端可用。",
-  "version": "1.1.0",
+  "description": "DSH 网页端识图插件（dsh-vision-window）：输入框旁可拖动的图片存储框，粘贴/拖入截图后自动存到工作区并把图片路径插到消息最前；自带 vision 工具 + 识图技能，模型预设（OpenCode Go/Zen、小米 MiMo）+ DSH 凭据 + 供应商自动降级 + 答案缓存；另附 7 个零配置本地工具（vw_crop/vw_pixel_diff/vw_colors/vw_trace/vw_ocr/vw_html_screenshot/vw_extract_foreground），Web 与 Headless 双端可用。",
+  "version": "1.2.0",
   "license": "MIT",
   "type": "module",
   "main": "lib/index.js",
@@ -14,6 +14,8 @@
     "lib",
     "cordis.patch.yml",
     "README.md",
+    "README.zh.md",
+    "assets",
     "LICENSE"
   ],
   "keywords": [
@@ -36,7 +38,7 @@
     "node": ">=20.9.0"
   },
   "scripts": {
-    "check": "node --check lib/index.js && node --check lib/client.js",
+    "check": "node --check lib/index.js && node --check lib/client.js && node --check lib/image-utils.js && node --check lib/local-tools.js",
     "test": "node --test",
     "prepack": "npm run check"
   },
@@ -52,6 +54,8 @@
   "dependencies": {
     "@deepseek-ai/dsh-tools": "^0.1.0-rc.6",
     "@deepseek-ai/schemastery": "^3.18.1",
+    "potrace": "^2.1.8",
+    "puppeteer-core": "^25.7.0",
     "sharp": "^0.35.3"
   },
   "peerDependencies": {

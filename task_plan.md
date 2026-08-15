@@ -1,4 +1,4 @@
-# dsh-vision-window v1.1 升级计划
+# dsh-vision-window v1.1 → v1.2 升级计划
 
 ## 目标（用户确认，按优先级排序）
 
@@ -62,6 +62,23 @@
 - [x] webtest 临时 profile 验证客户端 bundle 已包含折叠逻辑与限高样式（随后清理）
 - [x] 已识别用户截图并归档到「已识别图片」（03_设置面板过长截图.md + 图片移动）
 
+### Phase 10：零配置本地像素/OCR 工具（已确认：7 个全量 + vw_* 命名）
+- 目标：用户不填任何供应商配置时，也能让主模型自动调用本地像素分析与 OCR 工具。
+- 已确认范围：`vw_crop`、`vw_pixel_diff`、`vw_colors`、`vw_trace`、`vw_ocr`、`vw_html_screenshot`、`vw_extract_foreground`。
+- 命名：`vw_*`（避免与 dsh-vision-router 的 `vision_*` 冲突）。
+- 零配置保证：不碰 credentials；产物写 `<workspace>/.dsh-vision-window/artifacts`。
+- 依赖：`potrace`（纯 JS）+ `puppeteer-core`（html_screenshot）；OCR 用系统 tesseract（execFile，不新增 npm 依赖）。
+- 自动调用：工具常驻注册 + 更新 `vision-fallback` 技能内容。
+- [x] 版本号 1.2.0 + description 更新
+- [x] 真机零配置验证：临时 preset=xiaomi-mimo（无 XIAOMI_API_KEY）→ headless 调 `vw_colors` 返回左红右蓝各 50%；settings 已还原（哈希一致）
+- [x] 真机验证 `vw_pixel_diff`（同尺寸 100% 差异、尺寸不一致 2.50% + 缩放提示、热力图 40×20、JSON `resizedRebuilt:true`）；修复 `dimensionsDiffer` 文案未拼入返回值的问题
+- [x] 真机验证 `vw_crop`（20×20 全红 PNG）、`vw_ocr`（未装 tesseract 时返回安装指引）、`vw_html_screenshot`（系统 Chrome，1200×720 PNG）
+- [x] webtest 临时 profile（3999）验证客户端 bundle 含 `vw_*`/`localTools`/`artifactsDir`/零配置文案；已停服并删除 profile
+- [x] README 重写：README.md 默认英文 + README.zh.md 中文；少 emoji；模仿 dsh-vision-router / dsh-vision-toolkit 文风；加入用户截图 `assets/vision-window-demo.png` 作演示
+- [x] `npm audit --omit=dev`：5 moderate 全部来自 potrace→jimp→phin 的远程加载链（插件只传本地 Buffer，不可达）；README 安全说明已记录；sharp 0.35.3 零漏洞
+- [x] 五轴代码审查：3 必修项已修（前景洪泛 `queue.shift()` 改索引指针；`vw_trace` 1MP 上限在 `downscale=false` 时也强制；`vw_html_screenshot` 拦截非 `file:` 请求），另修多项 Optional/Nit；测试增至 23 项全绿
+- [ ] git commit + push origin/main
+
 ## 验收总闸
 
 - [x] 三个预设 + 自定义可选；主预设 + 备用自动降级且带提示（代码+单测；真机降级回归待做）
@@ -69,6 +86,10 @@
 - [x] 缓存命中、downscale、推理剥离均有测试覆盖
 - [x] Web 与 headless 双 profile 均可识图（headless 已真机识图；web 宿主+客户端在 webtest:3999 验证加载）
 - [x] 老版本 config.json 用户升级不丢配置（实测自动迁移）
+- [x] v1.2 headless 零配置真机通过（vw_colors 在无凭据 preset 下正确返回；pixel_diff/crop/ocr/html_screenshot 均实测）
+- [x] v1.2 webtest 客户端 bundle 含 vw_*/localTools/artifactsDir 文案（临时 profile 已清理）
+- [x] README 默认英文 + README.zh.md 中文版，含演示截图
+- [ ] v1.2 commit + push origin/main
 - [ ] 重启正式 `dsh web` 后浮窗贴图全流程回归（需用户配合）
 
 ## 风险与回滚
@@ -91,3 +112,6 @@
 | `node --test tests/` 在 Windows 下把目录当模块 | 1 | 改为 `node --test` 自动发现 |
 | npm 11 allowScripts 阻止 sharp install script | 1 | `npm approve-scripts sharp` 后正常加载 |
 | `dsh web --profile` / `dsh --profile x web` 参数顺序均报错 | 2 | 正确形态：`dsh --profile <name> --port 3999`（web 是 profile 别名，不能与自定义 profile 混用） |
+| settings 临时切 preset 时 `-replace` 把反引号 n 写成了字面量 | 1 | 按行重建 `vision-window:` 段后校验；测试完从备份整文件还原并比对哈希 |
+| vw_pixel_diff 尺寸不一致时未把 `dimensionsDiffer` 文案拼进返回 | 1 | 返回值追加 `；两张图尺寸不同…`；真机复测确认 |
+| jimp override 1.6.1 导致 potrace `instanceof` 报错 | 2 | jimp 1.x 与 potrace CJS 不兼容；回退无 overrides 基线（依赖级 overrides 对消费者 profile 也不生效），审计公告在 README 记录为不可达路径 |

@@ -92,3 +92,21 @@
 - `vision` 工具在 headless 由主模型调用；验证任务示例：`dsh --profile headless "用 vision 识别 C:\path\a.png 并告诉我内容"`。
 - 推理模型（MiMo V2.5）chat 响应可能含顶层 `reasoning_content` 或 `message.content` 内嵌 `<think>`；
   Responses 可能含 `reasoning` output item —— 三种形态都要处理。
+
+## 9. v1.2 审计与 README 文风调研（2026-08-15 续）
+
+### 9.1 npm audit（potrace 传递依赖）
+
+- 基线：`potrace@^2.1.8` → `jimp@0.14.0` → `phin@2.9.3`。`npm audit --omit=dev` 报 5 moderate：GHSA-x565-32qp-m3vf（phin <3.7.1 重定向后可能带上敏感头）。
+- 受影响路径是 jimp 的**远程 URL 加载**；本插件 `vw_trace` 只把本地校验过的 Buffer 传给 `potrace.trace(buffer)`，永不触发该路径。
+- 尝试过的修复：
+  1. `overrides: jimp 0.22.12`：本地测试通过，phin 升到 3.7.1，但引入 file-type 16.5.4 的 GHSA-5v7r-6r5c-r473（moderate，ASF 解析死循环），audit 仍不归零。
+  2. `overrides: jimp 1.6.1`：audit 归零，但 potrace 的 `target instanceof Jimp` 直接 TypeError（jimp 1.x 的 CJS 导出与 potrace 不兼容），测试挂。
+  3. file-type 修复版 21.3.1+ 是 ESM-only，jimp 0.22.12 是 CJS `require('file-type')`，强顶会在 Node <22.12 环境炸；且依赖包里的 `overrides` 对消费者 profile 根项目不生效，写进 package.json 会误导。
+- 结论：**回退无 overrides 基线**（与 dsh-vision-router 同款 potrace@^2.1.8），audit 公告在 README「Security notes / 安全说明」如实记录为不可达路径。sharp 0.35.3 自身零公告。
+
+### 9.2 README 重写文风（参考 dsh-vision-router / dsh-vision-toolkit）
+
+- 结构：居中 hero 标题 + 一句话定位 + badges + 语言切换 → Why this exists → 演示图 + 流程 → How it compares（三方对比表）→ Quick start → Highlights → Tools 表 → Provider presets → Credentials → Configuration 表 → Headless YAML → Requirements → Install and lifecycle → Security notes → Architecture → Development → Known limitations → License。
+- 文风：少 emoji（甚至不用），技术性短句，表格承载事实，代码块给可复制命令，安全说明单独成段。
+- 演示图：用户 2026-08-15 贴的 DSH Web 截图已复制到 `assets/vision-window-demo.png`（1332×320 PNG，约 81 KB），README.md 与 README.zh.md 均引用。
