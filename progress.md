@@ -61,6 +61,7 @@
 - [x] commit 9e16f5a + push origin/main（v1.2.0）
 - [x] GitHub Releases：v1.1.0（686cec0）+ v1.2.0（9e16f5a）已发布；README release 徽章链接 release 页
 - [x] 按用户要求删除 README 中英两版的横向对比章节；commit 765562e + push
+- [x] package.json description 重写为「英文在前 + 中文在后」的简明文案（单模态识图 / 多截图窗口 / 自动归档 / 独立模块化）
 - [ ] 提醒用户重启正式 `dsh web`
 
 ## 验证过的命令
