@@ -1,6 +1,7 @@
 node_modules/
 *.tgz
 pasted_images/
+.dsh-vision-window/
 *.log
 .DS_Store
 
