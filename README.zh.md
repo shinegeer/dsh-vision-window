@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://github.com/shinegeer/dsh-vision-window/releases/tag/v1.2.0"><img src="https://img.shields.io/badge/release-v1.2.0-5B4CF0?style=flat-square" alt="Release v1.2.0" /></a>
-  <img src="https://img.shields.io/badge/verified-23%20tests-2EA44F?style=flat-square" alt="Verified: 23 tests" />
+  <img src="https://img.shields.io/badge/verified-24%20tests-2EA44F?style=flat-square" alt="Verified: 24 tests" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2EA44F?style=flat-square" alt="License: MIT" /></a>
   <a href="package.json"><img src="https://img.shields.io/badge/Node.js-%3E%3D20.9-339933?style=flat-square&amp;logo=nodedotjs&amp;logoColor=white" alt="Node.js >=20.9" /></a>
   <img src="https://img.shields.io/badge/runtime-no%20Python-8A2BE2?style=flat-square" alt="No Python" />
@@ -75,7 +75,7 @@ dsh --profile web --dump-config | grep ui-vision-window
 - **一个显式动作才发送。** 只有点“识别并发送”时，草稿文字才和图片路径合并发出——不会误发，也不污染输入框。
 - **模型预设 + 降级链。** 内置 OpenCode Go、OpenCode Zen（免费）、小米 MiMo 预设，外加自定义 OpenAI 兼容供应商；失败分类后按顺序降级，429 尊重 Retry-After 退避一次。
 - **按内容缓存答案。** 缓存 key = 图片内容哈希 + 问题 + 供应商链签名；换链、改配置立即失效。
-- **大图先缩小再上传。** 超过像素预算由 `sharp` 自动 downscale，失败则回退原图。
+- **大图先缩小再上传。** 超过像素预算由 `sharp` 自动 downscale，失败则回退原图；视觉上传随后统一转成 JPEG（quality 82），大幅减小 PNG 截图的上行体积。
 - **剥离推理块。** 成对、未闭合、HTML 转义和 `<|think|>` 四种形态都会在结果交给模型前移除。
 - **像素结果可验证。** `vw_pixel_diff` 返回差异率、红色热力图和 JSON 报告——UI 还原变成可测量的数字，而不是肉眼对比。
 - **Headless 工具不减配。** Web 专属 RPC 包在 `connection` 注入里；headless 同样拿到 `vision`、技能和全部 `vw_*` 工具。
@@ -281,7 +281,7 @@ Web 专属的 `/paste-image` RPC 注册在 `ctx.inject(['connection'])` 里，he
 
 ```sh
 npm run check   # node --check 全部四个 lib 文件
-npm test        # node --test，23 项测试
+npm test        # node --test，24 项测试
 npm pack        # prepack 会自动跑 check
 ```
 

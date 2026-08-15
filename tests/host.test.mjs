@@ -6,6 +6,7 @@ import {
   stripThinking,
   resolveChain,
   downscaleImage,
+  jpegForVision,
   internals,
   Config,
 } from '../lib/index.js';
@@ -88,6 +89,24 @@ test('downscaleImage keeps small images untouched and tolerates garbage', async 
   assert.equal(await downscaleImage(small, 1_000_000), small);
   const garbage = Buffer.from(createHash('sha256').update('x').digest());
   assert.equal(await downscaleImage(garbage, 1_000_000), garbage);
+});
+
+test('jpegForVision shrinks noisy png uploads and tolerates garbage', async () => {
+  const raw = Buffer.alloc(512 * 512 * 3);
+  for (let y = 0; y < 512; y++) {
+    for (let x = 0; x < 512; x++) {
+      const i = (y * 512 + x) * 3;
+      raw[i] = Math.round(x * 255 / 511);
+      raw[i + 1] = Math.round(y * 255 / 511);
+      raw[i + 2] = Math.round((x + y) * 127 / 511);
+    }
+  }
+  const png = await sharp(raw, { raw: { width: 512, height: 512, channels: 3 } }).png().toBuffer();
+  const jpeg = await jpegForVision(png, 82);
+  assert.ok(jpeg.length < png.length);
+  assert.equal((await sharp(jpeg).metadata()).format, 'jpeg');
+  const garbage = Buffer.from(createHash('sha256').update('y').digest());
+  assert.equal(await jpegForVision(garbage), garbage);
 });
 
 test('classifyHttpStatus maps HTTP codes to classes', () => {

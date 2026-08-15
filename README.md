@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://github.com/shinegeer/dsh-vision-window/releases/tag/v1.2.0"><img src="https://img.shields.io/badge/release-v1.2.0-5B4CF0?style=flat-square" alt="Release v1.2.0" /></a>
-  <img src="https://img.shields.io/badge/verified-23%20tests-2EA44F?style=flat-square" alt="Verified: 23 tests" />
+  <img src="https://img.shields.io/badge/verified-24%20tests-2EA44F?style=flat-square" alt="Verified: 24 tests" />
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-2EA44F?style=flat-square" alt="License: MIT" /></a>
   <a href="package.json"><img src="https://img.shields.io/badge/Node.js-%3E%3D20.9-339933?style=flat-square&amp;logo=nodedotjs&amp;logoColor=white" alt="Node.js >=20.9" /></a>
   <img src="https://img.shields.io/badge/runtime-no%20Python-8A2BE2?style=flat-square" alt="No Python" />
@@ -75,7 +75,7 @@ Two levels of configuration:
 - **One explicit action sends the image.** The composer draft and the image paths are combined only when you click the send button; no surprise sends, no input pollution.
 - **Presets and a failover chain.** OpenCode Go, OpenCode Zen (free) and Xiaomi MiMo presets, plus a custom OpenAI-compatible provider; failures are classified and walked in order, `429` honors `Retry-After` once.
 - **Answers are cached by content.** The cache key is the image hash plus question plus provider chain, so switching chains or changing settings invalidates it.
-- **Large images are downscaled before upload.** `sharp` reduces images over the pixel budget; failure falls back to the original bytes.
+- **Large images are downscaled before upload.** `sharp` reduces images over the pixel budget; failure falls back to the original bytes. Vision uploads are then encoded as JPEG (quality 82) so huge PNG screenshots stay small on the wire.
 - **Reasoning blocks are stripped.** Paired, unclosed, HTML-escaped and `<|think|>` forms are removed before the answer reaches the model.
 - **Local tools are measurable.** Pixel diff returns a ratio, a red heatmap and a JSON report — UI restoration becomes a number instead of an eyeball comparison.
 - **Headless keeps the same tools.** The Web-only RPC lives behind a `connection` injection; headless sessions get `vision`, the skill and all seven `vw_*` tools unchanged.
@@ -281,7 +281,7 @@ The Web-only `/paste-image` RPC is registered inside `ctx.inject(['connection'])
 
 ```sh
 npm run check   # node --check on all four lib files
-npm test        # node --test, 23 tests
+npm test        # node --test, 24 tests
 npm pack        # prepack runs check
 ```
 
