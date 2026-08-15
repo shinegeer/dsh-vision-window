@@ -18,9 +18,10 @@
 - [x] web 端间接验证：创建 `webtest` 临时 profile（base+web-app+插件），`dsh --profile webtest --port 3999` 启动成功，HTML 注册了 `/plugins/@dsh-external/dsh-client-ui-vision-window/client.js`，bundle 含 `ui-paste-image`/预设/`保存凭据` 标记；已停止并删除该测试 profile
 - [x] 降级链真机 final 回归：临时把主预设设为 xiaomi-mimo（无凭据）+ fallback=custom，headless 识图成功且输出带 `[vision-window 状态]`；settings 已还原
 - [x] downscale 端到端回归：3000×3000 大图 headless 识图成功（sharp 宿主内加载正常）
-- [ ] 交接文档 v8 更新（工作区文档）
-- [ ] 正式 `dsh web` 重启回归（需用户配合；重启会断开当前会话）
-- [ ] git add/commit/push
+- [x] 交接文档 v8 更新（工作区文档）
+- [x] sharp 0.34 → 0.35.3（npm audit 0 漏洞；engines → Node ≥20.9；升级后 headless 复测通过）
+- [x] git commit 87e978d + push origin/main（首次连接 reset，重试成功）
+- [ ] 正式 `dsh web` 重启后浮窗贴图全流程回归（需用户配合：重启会断开当前会话）
 
 ## 验证过的命令
 

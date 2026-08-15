@@ -48,11 +48,11 @@
 - [x] `tests/host.test.mjs` + `tests/apply.test.mjs`（14 项全绿，`npm test`）
 - [x] README 重写（预设/凭据/降级/缓存/downscale/推理剥离/headless）
 - [x] package.json 1.1.0 + 新依赖；`npm run check` 通过
-- [ ] 交接文档 v8（工作区 `D:\Deepseek Harness\DSH修改\添加发送图片插件\交接文档.md`）
+- [x] 交接文档 v8（工作区 `D:\Deepseek Harness\DSH修改\添加发送图片插件\交接文档.md`）
 - [x] 降级链端到端 final 回归（xiaomi-mimo 无凭据 → 自动降级 custom 成功，输出带 `[vision-window 状态]`；已还原 settings）
 - [x] downscale 端到端回归（3000×3000 大图 headless 识图成功，sharp 在 DSH 宿主内正常加载）
-- [ ] 重启 `dsh web` 全流程回归（需用户配合，会断开当前会话）
-- [ ] git commit + push（`shinegeer/dsh-vision-window`）
+- [x] git commit 87e978d + push `origin/main` 成功（首次连接重置，重试成功）
+- [ ] 重启正式 `dsh web` 全流程回归（需用户配合：停止并重新运行 `dsh web`，刷新页面后用浮窗贴图验证）
 
 ## 验收总闸
 
